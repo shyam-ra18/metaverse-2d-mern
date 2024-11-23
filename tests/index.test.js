@@ -777,18 +777,20 @@ describe("Websocket tests", () => {
     let adminY;
 
     function waitForAndPopLatestMessage(messageArray) {
-        return new Promise(resolve => {
+        return new Promise(async (resolve) => {
+            // If there are messages in the array, resolve immediately
             if (messageArray.length > 0) {
-                resolve(messageArray.shift())
-            } else {
-                let interval = setInterval(() => {
-                    if (messageArray.length > 0) {
-                        resolve(messageArray.shift())
-                        clearInterval(interval)
-                    }
-                }, 100)
+                resolve(messageArray.shift());
+                return;
             }
-        })
+
+            // Otherwise, wait until a message appears
+            while (messageArray.length === 0) {
+                await new Promise(resolve => setTimeout(resolve, 100)); // Wait for 100ms before checking again
+            }
+
+            resolve(messageArray.shift()); // Resolve with the popped message
+        });
     }
 
     async function setupHTTP() {
@@ -914,7 +916,7 @@ describe("Websocket tests", () => {
         await setupWs()
     })
 
-    test("Get back ack for joining the space", async () => {
+    test("Get back acknowledgment for joining the space", async () => {
         console.log("insixce first test")
         ws1.send(JSON.stringify({
             "type": "join",
