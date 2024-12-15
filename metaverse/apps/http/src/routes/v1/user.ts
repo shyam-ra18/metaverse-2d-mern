@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { SigninSchema, SignupSchema } from "../../types";
+import { SigninSchema, SignupSchema, UpadeMetadataSchema } from "../../types";
 import client from '@repo/db/client';
-// import bcrypt from 'bcrypt';
 import { hash, compare } from "../../scrypt";
 import jwt from 'jsonwebtoken';
 import { JWT_PASSWORD } from "../../config";
+import { userMiddleware } from "../../middleware/user";
 
 export const userRouter = Router();
 
@@ -85,14 +85,54 @@ userRouter.post("/signin", async (req, res) => {
 
 });
 
-userRouter.post("/metadata", (req, res) => {
-    res.json({
-        message: 'signin'
-    })
+userRouter.post("/metadata", userMiddleware, async (req, res): Promise<void> => {
+    try {
+        // Validate request body with Zod
+        const parsedData = UpadeMetadataSchema.safeParse(req.body);
+        if (!parsedData.success) {
+            res.status(400).json({
+                message: 'Validation Failed',
+                errors: parsedData.error.errors
+            });
+            return
+        }
+
+        // Update user metadata in the database
+        await client.user.update({
+            where: { id: req.userId },
+            data: { avatarId: parsedData.data.avatarId },
+        });
+
+        // Respond with success
+        res.status(200).json({ message: 'Metadata updated' });
+    } catch (error) {
+        // console.error('Error updating metadata:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
 });
 
-userRouter.get("/metadata/bulk", (req, res) => {
-    res.json({
-        message: 'signin'
-    })
+userRouter.get("/metadata/bulk", async (req, res): Promise<void> => {
+    try {
+        const userIdString = (req.query.ids ?? []) as string;
+        const userIds = (userIdString).slice(1, userIdString?.length - 2).split(',');
+
+        const metadata = await client.user.findMany({
+            where: {
+                id: { in: userIds }
+            },
+            select: {
+                avatar: true,
+                id: true
+            }
+        })
+
+        res.status(200).json({
+            avatars: metadata?.map((m) => ({
+                id: m.id,
+                avatarId: m.avatar?.imageUrl
+            }))
+        })
+    } catch (error) {
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
 });

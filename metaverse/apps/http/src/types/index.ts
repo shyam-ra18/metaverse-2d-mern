@@ -1,5 +1,15 @@
 import z from "zod";
 
+declare global {
+    namespace Express {
+        export interface Request {
+            role: "Admin" | "User"
+            userId?: string
+        }
+    }
+}
+
+
 export const SignupSchema = z.object({
     username: z.string(),
     password: z.string().min(8),
@@ -19,7 +29,7 @@ export const CreateSpaceSchema = z.object({
     name: z.string(),
     //custom function that validates 100x100 schema
     dimensions: z.string().regex(/^[0-9]{1,4}x[0-9]{1,4}$/),
-    avatarId: z.string(),
+    mapId: z.string().optional(),
 })
 
 export const AddElementSchema = z.object({
