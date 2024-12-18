@@ -2,14 +2,15 @@ import jwt from 'jsonwebtoken';
 import { JWT_PASSWORD } from '../config';
 import { NextFunction, Request, Response } from 'express';
 
-export const adminMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const adminMiddleware = (req: Request, res: Response, next: NextFunction): void => {
     try {
         // Extract the Authorization header
         const authHeader = req.headers.authorization;
 
         // Check if the header exists and is properly formatted
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ message: 'Unauthorized: Missing or invalid token' });
+            res.status(401).json({ message: 'Unauthorized: Missing or invalid token' });
+            return
         }
 
         // Extract the token from the header
@@ -17,7 +18,8 @@ export const adminMiddleware = (req: Request, res: Response, next: NextFunction)
 
         // Check if the token is present
         if (!token) {
-            return res.status(403).json({ message: 'Unauthorized: Token not provided' });
+            res.status(403).json({ message: 'Unauthorized: Token not provided' });
+            return
         }
 
         const decoded = jwt.verify(token, JWT_PASSWORD) as { role: string, userId: string };
