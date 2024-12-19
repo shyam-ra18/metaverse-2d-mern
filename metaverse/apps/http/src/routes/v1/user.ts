@@ -95,6 +95,19 @@ userRouter.post("/metadata", userMiddleware, async (req, res) => {
             });
             return
         }
+
+        // Ensure that the avatarId exists in the Avatar table
+        const avatarExists = await client.avatar.findUnique({
+            where: { id: parsedData.data.avatarId },
+        });
+
+        if (!avatarExists) {
+            res.status(400).json({
+                message: 'Invalid avatarId. Avatar does not exist.',
+            });
+            return
+        }
+
         // Update user metadata in the database
         await client.user.update({
             where: { id: req.userId },
@@ -104,7 +117,7 @@ userRouter.post("/metadata", userMiddleware, async (req, res) => {
         // Respond with success
         res.status(200).json({ message: 'Metadata updated' });
     } catch (error) {
-        // console.error('Error updating metadata:', error);
+        console.error('Error updating metadata:', error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
 });

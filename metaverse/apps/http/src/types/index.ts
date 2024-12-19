@@ -64,7 +64,7 @@ export const CreateMapSchema = z.object({
     dimensions: z.string().regex(/^[0-9]{1,4}x[0-9]{1,4}$/),
     name: z.string(),
     defaultElements: z.array(z.object({
-        element: z.string(),
+        elementId: z.string(),
         x: z.number(),
         y: z.number(),
     }))

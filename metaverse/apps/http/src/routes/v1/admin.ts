@@ -73,7 +73,7 @@ adminRouter.post("/avatar", adminMiddleware, async (req, res) => {
         });
 
         res.status(201).json({
-            id: avatar.id,
+            avatarId: avatar.id,
             message: "Avatar created"
         })
     } catch (error) {
@@ -81,7 +81,7 @@ adminRouter.post("/avatar", adminMiddleware, async (req, res) => {
     }
 });
 
-adminRouter.get("/map", adminMiddleware, async (req, res) => {
+adminRouter.post("/map", adminMiddleware, async (req, res) => {
     try {
         const parsedData = CreateMapSchema.safeParse(req.body);
         if (!parsedData.success) {
@@ -97,7 +97,7 @@ adminRouter.get("/map", adminMiddleware, async (req, res) => {
                 thumbnail: parsedData.data.thumbnail,
                 mapElements: {
                     create: parsedData.data.defaultElements.map(e => ({
-                        elementId: e.element,
+                        elementId: e.elementId,
                         x: e.x,
                         y: e.y
                     }))
