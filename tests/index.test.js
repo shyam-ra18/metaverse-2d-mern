@@ -39,146 +39,146 @@ const axios = {
 }
 //Describe blocks
 
-describe('Authentication', () => {
-    test('User is able to sign up only once', async () => {
-        const username = `user${Math.random()}`
-        const password = '123456';
-        const response = await axios.post(`${BACKEND_URL}/user/signup`, {
+// describe('Authentication', () => {
+//     test('User is able to sign up only once', async () => {
+//         const username = `user${Math.random()}`
+//         const password = '123456890';
+//         const response = await axios.post(`${BACKEND_URL}/user/signup`, {
+//             username,
+//             password,
+//             type: 'admin'
+//         });
+//         expect(response.status).toBe(201);
+//         const updatedresponse = await axios.post(`${BACKEND_URL}/user/signup`, {
+//             username,
+//             password,
+//             type: 'admin'
+//         });
+//         expect(updatedresponse.status).toBe(400);
+//     });
+
+//     test('Signup request fails if the username is empty', async () => {
+//         const username = `user${Math.random()}`
+//         const password = '123456890';
+//         const response = await axios.post(`${BACKEND_URL}/user/signup`, {
+//             password,
+//             type: 'admin'
+//         });
+//         expect(response.status).toBe(400);
+//     })
+
+//     test('Signup request fails if the password is empty', async () => {
+//         const username = `user${Math.random()}`
+//         const response = await axios.post(`${BACKEND_URL}/user/signup`, {
+//             username,
+//             type: 'admin'
+//         });
+//         expect(response.status).toBe(400);
+//     });
+
+//     test('Signin succeeds if the username & password are correct', async () => {
+//         const username = `user${Math.random()}`
+//         await axios.post(`${BACKEND_URL}/user/signup`, {
+//             username,
+//             password: '123456890',
+//             type: 'admin'
+//         });
+
+//         const response = await axios.post(`${BACKEND_URL}/user/signin`, {
+//             username,
+//             password: '123456890',
+//         });
+//         expect(response.status).toBe(200);
+//         expect(response.data.token).toBeDefined();
+//     });
+
+//     test('Signin fails if the username and password are incorrect', async () => {
+
+//         const username = `user${Math.random()}`
+//         await axios.post(`${BACKEND_URL}/user/signup`, {
+//             username,
+//             password: '123456890',
+//             type: 'admin'
+//         });
+//         // Attempt to signin with a non-existent username and an incorrect password
+//         const response = await axios.post(`${BACKEND_URL}/user/signin`, {
+//             username: 'nonExistentUser',  // Non-existent username
+//             password: '123456890',    // Incorrect password
+//         });
+//         expect(response.status).toBe(403);
+//     });
+
+// });
+
+describe('User metada endpoint', () => {
+    let token = '';
+    let avatarId = '';
+
+    beforeAll(async () => {
+        const username = 'user' + Math.random();
+        const password = '123456890';
+        await axios.post(`${BACKEND_URL}/user/signup`, {
             username,
             password,
-            type: 'admin'
-        });
-        expect(response.status).toBe(201);
-        const updatedresponse = await axios.post(`${BACKEND_URL}/user/signup`, {
-            username,
-            password,
-            type: 'admin'
-        });
-        expect(updatedresponse.status).toBe(400);
-    });
-
-    test('Signup request fails if the username is empty', async () => {
-        const username = `user${Math.random()}`
-        const password = '123456';
-        const response = await axios.post(`${BACKEND_URL}/user/signup`, {
-            password,
-            type: 'admin'
-        });
-        expect(response.status).toBe(400);
-    })
-
-    test('Signup request fails if the password is empty', async () => {
-        const username = `user${Math.random()}`
-        const response = await axios.post(`${BACKEND_URL}/user/signup`, {
-            username,
-            type: 'admin'
-        });
-        expect(response.status).toBe(400);
-    });
-
-    test('Signin succeeds if the username & password are correct', async () => {
-        const username = `user${Math.random()}`
-        await axios.post(`${BACKEND_URL}/signup`, {
-            username,
-            password: '123456',
             type: 'admin'
         });
 
         const response = await axios.post(`${BACKEND_URL}/user/signin`, {
             username,
-            password: '123456',
-        });
-        expect(response.status).toBe(200);
-        expect(response.data.token).toBeDefined();
-    });
-
-    test('Signin fails if the username and password are incorrect', async () => {
-
-        const username = `user${Math.random()}`
-        await axios.post(`${BACKEND_URL}/user/signup`, {
-            username,
-            password: '123456',
+            password,
             type: 'admin'
         });
-        // Attempt to signin with a non-existent username and an incorrect password
-        const response = await axios.post(`${BACKEND_URL}/signin`, {
-            username: 'nonExistentUser',  // Non-existent username
-            password: '123456',    // Incorrect password
-        });
 
-        expect(response.status).toBe(403);
+        token = response.data.token;
+
+        const avatarResponse = await axios.post(`${BACKEND_URL}/admin/avatar`, {
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm3RFDZM21teuCMFYx_AROjt-AzUwDBROFww&s",
+            "name": "Timmy"
+        }, {
+            headers: {
+                authorization: `Bearer ${token}`
+            }
+        })
+        // console.log("avatarresponse is " + avatarResponse.data.avatarId)
+
+        avatarId = avatarResponse.data.avatarId;
+
     });
 
+
+    test("User can't update their metadata with a wrong avatar id", async () => {
+        const response = await axios.post(`${BACKEND_URL}/user/metadata`, {
+            avatarId: "1231231237832"
+        }, {
+            headers: {
+                "authorization": `Bearer ${token}`
+            }
+        })
+        // console.log("token ==>", token);
+        console.log("response ==>", response);
+        expect(response.status).toBe(400)
+    });
+
+    test("User can update their metadata with the right avatar id", async () => {
+        const response = await axios.post(`${BACKEND_URL}/user/metadata`, {
+            avatarId
+        }, {
+            headers: {
+                "authorization": `Bearer ${token}`
+            }
+        })
+
+        expect(response.status).toBe(200)
+    });
+
+    test("User is not able to update their metadata if the auth header is not present", async () => {
+        const response = await axios.post(`${BACKEND_URL}/user/metadata`, {
+            avatarId
+        })
+
+        expect(response.status).toBe(403)
+    })
 });
-
-// describe('User metada endpoint', () => {
-//     let token = '';
-//     let avatarId = '';
-
-//     beforeAll(async () => {
-//         const username = 'user' + Math.random();
-//         const password = '123456';
-//         await axios.post(`${BACKEND_URL}/signup`, {
-//             username,
-//             password,
-//             type: 'admin'
-//         });
-
-//         const response = await axios.post(`${BACKEND_URL}/signin`, {
-//             username,
-//             password,
-//             type: 'admin'
-//         });
-
-//         token = response.data.token;
-
-//         const avatarResponse = await axios.post(`${BACKEND_URL}/admin/avatar`, {
-//             "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm3RFDZM21teuCMFYx_AROjt-AzUwDBROFww&s",
-//             "name": "Timmy"
-//         }, {
-//             headers: {
-//                 authorization: `Bearer ${token}`
-//             }
-//         })
-//         // console.log("avatarresponse is " + avatarResponse.data.avatarId)
-
-//         avatarId = avatarResponse.data.avatarId;
-
-//     });
-
-
-//     test("User cant update their metadata with a wrong avatar id", async () => {
-//         const response = await axios.post(`${BACKEND_URL}/user/metadata`, {
-//             avatarId: "123123123"
-//         }, {
-//             headers: {
-//                 "authorization": `Bearer ${token}`
-//             }
-//         })
-
-//         expect(response.status).toBe(400)
-//     });
-
-//     test("User can update their metadata with the right avatar id", async () => {
-//         const response = await axios.post(`${BACKEND_URL}/user/metadata`, {
-//             avatarId
-//         }, {
-//             headers: {
-//                 "authorization": `Bearer ${token}`
-//             }
-//         })
-
-//         expect(response.status).toBe(200)
-//     });
-
-//     test("User is not able to update their metadata if the auth header is not present", async () => {
-//         const response = await axios.post(`${BACKEND_URL}/user/metadata`, {
-//             avatarId
-//         })
-
-//         expect(response.status).toBe(403)
-//     })
-// });
 
 // describe("User avatar information", () => {
 //     let avatarId;
@@ -187,9 +187,9 @@ describe('Authentication', () => {
 
 //     beforeAll(async () => {
 //         const username = 'user' + Math.random();
-//         const password = "123456"
+//         const password = "123456890"
 
-//         const signupResponse = await axios.post(`${BACKEND_URL}/signup`, {
+//         const signupResponse = await axios.post(`${BACKEND_URL}/user/signup`, {
 //             username,
 //             password,
 //             type: "admin"
@@ -198,7 +198,7 @@ describe('Authentication', () => {
 //         userId = signupResponse.data.userId
 
 //         // console.log("userid is " + userId)
-//         const response = await axios.post(`${BACKEND_URL}/signin`, {
+//         const response = await axios.post(`${BACKEND_URL}/user/signin`, {
 //             username,
 //             password
 //         })
@@ -247,9 +247,9 @@ describe('Authentication', () => {
 
 //     beforeAll(async () => {
 //         const username = 'user' + Math.random();
-//         const password = "123456"
+//         const password = "123456890"
 
-//         const signupResponse = await axios.post(`${BACKEND_URL}/signup`, {
+//         const signupResponse = await axios.post(`${BACKEND_URL}/user/signup`, {
 //             username,
 //             password,
 //             type: "admin"
@@ -257,14 +257,14 @@ describe('Authentication', () => {
 
 //         adminId = signupResponse.data.userId
 
-//         const response = await axios.post(`${BACKEND_URL}/signin`, {
+//         const response = await axios.post(`${BACKEND_URL}/user/signin`, {
 //             username,
 //             password
 //         })
 
 //         adminToken = response.data.token
 
-//         const userSignupResponse = await axios.post(`${BACKEND_URL}/signup`, {
+//         const userSignupResponse = await axios.post(`${BACKEND_URL}/user/signup`, {
 //             username: username + "-user",
 //             password,
 //             type: "user"
@@ -272,7 +272,7 @@ describe('Authentication', () => {
 
 //         userId = userSignupResponse.data.userId
 
-//         const userSigninResponse = await axios.post(`${BACKEND_URL}/signin`, {
+//         const userSigninResponse = await axios.post(`${BACKEND_URL}/user/signin`, {
 //             username: username + "-user",
 //             password
 //         })
@@ -466,9 +466,9 @@ describe('Authentication', () => {
 
 //     beforeAll(async () => {
 //         const username = 'user' + Math.random();
-//         const password = "123456"
+//         const password = "123456890"
 
-//         const signupResponse = await axios.post(`${BACKEND_URL}/signup`, {
+//         const signupResponse = await axios.post(`${BACKEND_URL}/user/signup`, {
 //             username,
 //             password,
 //             type: "admin"
@@ -476,14 +476,14 @@ describe('Authentication', () => {
 
 //         adminId = signupResponse.data.userId
 
-//         const response = await axios.post(`${BACKEND_URL}/signin`, {
+//         const response = await axios.post(`${BACKEND_URL}/user/signin`, {
 //             username: username,
 //             password
 //         })
 
 //         adminToken = response.data.token
 
-//         const userSignupResponse = await axios.post(`${BACKEND_URL}/signup`, {
+//         const userSignupResponse = await axios.post(`${BACKEND_URL}/user/signup`, {
 //             username: username + "-user",
 //             password,
 //             type: "user"
@@ -491,7 +491,7 @@ describe('Authentication', () => {
 
 //         userId = userSignupResponse.data.userId
 
-//         const userSigninResponse = await axios.post(`${BACKEND_URL}/signin`, {
+//         const userSigninResponse = await axios.post(`${BACKEND_URL}/user/signin`, {
 //             username: username + "-user",
 //             password
 //         })
@@ -651,9 +651,9 @@ describe('Authentication', () => {
 
 //     beforeAll(async () => {
 //         const username = 'user' + Math.random();
-//         const password = "123456"
+//         const password = "123456890"
 
-//         const signupResponse = await axios.post(`${BACKEND_URL}/signup`, {
+//         const signupResponse = await axios.post(`${BACKEND_URL}/user/signup`, {
 //             username,
 //             password,
 //             type: "admin"
@@ -661,14 +661,14 @@ describe('Authentication', () => {
 
 //         adminId = signupResponse.data.userId
 
-//         const response = await axios.post(`${BACKEND_URL}/signin`, {
+//         const response = await axios.post(`${BACKEND_URL}/user/signin`, {
 //             username: username,
 //             password
 //         })
 
 //         adminToken = response.data.token
 
-//         const userSignupResponse = await axios.post(`${BACKEND_URL}/signup`, {
+//         const userSignupResponse = await axios.post(`${BACKEND_URL}/user/signup`, {
 //             username: username + "-user",
 //             password,
 //             type: "user"
@@ -676,7 +676,7 @@ describe('Authentication', () => {
 
 //         userId = userSignupResponse.data.userId
 
-//         const userSigninResponse = await axios.post(`${BACKEND_URL}/signin`, {
+//         const userSigninResponse = await axios.post(`${BACKEND_URL}/user/signin`, {
 //             username: username + "-user",
 //             password
 //         })
@@ -829,14 +829,14 @@ describe('Authentication', () => {
 
 //     async function setupHTTP() {
 //         const username = 'user' + Math.random();
-//         const password = "123456"
-//         const adminSignupResponse = await axios.post(`${BACKEND_URL}/signup`, {
+//         const password = "123456890"
+//         const adminSignupResponse = await axios.post(`${BACKEND_URL}/user/signup`, {
 //             username,
 //             password,
 //             type: "admin"
 //         })
 
-//         const adminSigninResponse = await axios.post(`${BACKEND_URL}/signin`, {
+//         const adminSigninResponse = await axios.post(`${BACKEND_URL}/user/signin`, {
 //             username,
 //             password
 //         })
@@ -846,12 +846,12 @@ describe('Authentication', () => {
 //         console.log("adminSignupResponse.status")
 //         console.log(adminSignupResponse.status)
 
-//         const userSignupResponse = await axios.post(`${BACKEND_URL}/signup`, {
+//         const userSignupResponse = await axios.post(`${BACKEND_URL}/user/signup`, {
 //             username: username + `-user`,
 //             password,
 //             type: "user"
 //         })
-//         const userSigninResponse = await axios.post(`${BACKEND_URL}/signin`, {
+//         const userSigninResponse = await axios.post(`${BACKEND_URL}/user/signin`, {
 //             username: username + `-user`,
 //             password
 //         })

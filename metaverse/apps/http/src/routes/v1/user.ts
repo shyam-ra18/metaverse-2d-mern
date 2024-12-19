@@ -15,7 +15,6 @@ userRouter.post("/signup", async (req, res) => {
         res.status(400).json({ message: 'Validation Failed' })
         return
     }
-
     try {
 
         const userExist = await client.user.findUnique({
@@ -45,6 +44,7 @@ userRouter.post("/signup", async (req, res) => {
         });
 
     } catch (error) {
+        console.log('signup error ==> ', error)
         res.status(500).json({ message: 'Internal Server Error' });
     }
 });
@@ -72,9 +72,8 @@ userRouter.post("/signin", async (req, res) => {
         if (!isValid) {
             res.status(400).json({ message: 'Invalid credentials' })
         }
-
         const token = jwt.sign({
-            user: user.id,
+            userId: user.id,
             role: user.role
         }, JWT_PASSWORD);
 
@@ -85,7 +84,7 @@ userRouter.post("/signin", async (req, res) => {
 
 });
 
-userRouter.post("/metadata", userMiddleware, async (req, res): Promise<void> => {
+userRouter.post("/metadata", userMiddleware, async (req, res) => {
     try {
         // Validate request body with Zod
         const parsedData = UpadeMetadataSchema.safeParse(req.body);
@@ -96,7 +95,6 @@ userRouter.post("/metadata", userMiddleware, async (req, res): Promise<void> => 
             });
             return
         }
-
         // Update user metadata in the database
         await client.user.update({
             where: { id: req.userId },
