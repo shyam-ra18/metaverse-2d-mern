@@ -35,8 +35,14 @@ export const CreateSpaceSchema = z.object({
 export const AddElementSchema = z.object({
     elementId: z.string(),
     spaceId: z.string(),
-    x: z.number(),
-    y: z.number(),
+    x: z.number().refine(
+        (value) => Math.abs(value) < 1000,
+        { message: "x must be a number with at most 3 digits." }
+    ),
+    y: z.number().refine(
+        (value) => Math.abs(value) < 1000,
+        { message: "y must be a number with at most 3 digits." }
+    ),
 })
 
 export const DeleteElementSchema = z.object({

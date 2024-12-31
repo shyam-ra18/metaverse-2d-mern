@@ -65,7 +65,7 @@ spaceRouter.post("/", userMiddleware, async (req, res) => {
             });
 
             return space;
-        })
+        });
 
         res.status(201).json({ spaceId: space.id, message: 'Space created' })
 
@@ -234,6 +234,7 @@ spaceRouter.get("/:spaceId", userMiddleware, async (req, res) => {
             res.status(400).json({ message: "Space not found" })
             return
         }
+        console.log('space.elements ==> ', space.elements)
         res.status(200).json({
             dimensions: `${space.width}x${space.height}`,
             elements: space.elements.map(e => ({

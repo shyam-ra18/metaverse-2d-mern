@@ -589,13 +589,13 @@ describe("Arena endpoints", () => {
             }
         });
 
-
         const newResponse = await axios.get(`${BACKEND_URL}/space/${spaceId}`, {
             headers: {
                 "authorization": `Bearer ${userToken}`
             }
         });
 
+        console.log('data => ', newResponse.data);
         expect(newResponse.data.elements.length).toBe(2)
     })
 
@@ -756,8 +756,8 @@ describe("Admin Endpoints", () => {
             }
         })
         expect(elementReponse.status).toBe(200)
-        expect(mapResponse.status).toBe(200)
-        expect(avatarResponse.status).toBe(200)
+        expect(mapResponse.status).toBe(201)
+        expect(avatarResponse.status).toBe(201)
     })
 
     test("Admin is able to update the imageUrl for an element", async () => {
