@@ -191,7 +191,6 @@ describe("User avatar information", () => {
 
         userId = signupResponse.data.userId
 
-        // console.log("userid is " + userId)
         const response = await axios.post(`${BACKEND_URL}/user/signin`, {
             username,
             password
@@ -213,12 +212,9 @@ describe("User avatar information", () => {
     })
 
     test("Get back avatar information for a user", async () => {
-        console.log("asking for user with id " + userId)
         const response = await axios.get(`${BACKEND_URL}/user/metadata/bulk?ids=[${userId}]`);
-        console.log("response was " + userId)
-        console.log(JSON.stringify(response.data))
         expect(response.data.avatars.length).toBe(1);
-        expect(response.data.avatars[0].userId).toBe(userId);
+        expect(response.data.avatars[0].id).toBe(userId);
     })
 
     test("Available avatars lists the recently created avatar", async () => {
@@ -364,7 +360,6 @@ describe("Space information", () => {
                 authorization: `Bearer ${userToken}`
             }
         })
-        console.log('response ==> ', response);
         expect(response.status).toBe(400)
     })
 
@@ -374,7 +369,6 @@ describe("Space information", () => {
                 authorization: `Bearer ${userToken}`
             }
         })
-        console.log('response ==> ', response);
         expect([400, 403, 404]).toContain(response.status);
     })
 
@@ -434,8 +428,8 @@ describe("Space information", () => {
                 authorization: `Bearer ${adminToken}`
             }
         });
-        console.log('jhflksdjflksdfjlksdfj')
-        console.log(spaceCreateReponse.data)
+        // console.log('jhflksdjflksdfjlksdfj')
+        // console.log(spaceCreateReponse.data)
         const response = await axios.get(`${BACKEND_URL}/space/all`, {
             headers: {
                 authorization: `Bearer ${adminToken}`
@@ -550,7 +544,7 @@ describe("Arena endpoints", () => {
                 "authorization": `Bearer ${userToken}`
             }
         })
-        console.log(spaceResponse.data)
+        // console.log(spaceResponse.data)
         spaceId = spaceResponse.data.spaceId
     });
 
@@ -569,7 +563,7 @@ describe("Arena endpoints", () => {
                 "authorization": `Bearer ${userToken}`
             }
         });
-        console.log(response.data)
+        // console.log(response.data)
         expect(response.data.dimensions).toBe("100x200")
         expect(response.data.elements.length).toBe(3)
     })
@@ -581,8 +575,7 @@ describe("Arena endpoints", () => {
             }
         });
 
-        console.log(response.data.elements[0].id)
-        let res = await axios.delete(`${BACKEND_URL}/space/element`, {
+        const res = await axios.delete(`${BACKEND_URL}/space/element`, {
             data: { id: response.data.elements[0].id },
             headers: {
                 "authorization": `Bearer ${userToken}`
@@ -595,7 +588,6 @@ describe("Arena endpoints", () => {
             }
         });
 
-        console.log('data => ', newResponse.data);
         expect(newResponse.data.elements.length).toBe(2)
     })
 

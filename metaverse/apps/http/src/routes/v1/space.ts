@@ -74,6 +74,42 @@ spaceRouter.post("/", userMiddleware, async (req, res) => {
     }
 });
 
+spaceRouter.delete("/element", userMiddleware, async (req, res) => {
+    try {
+        const parsedData = DeleteElementSchema.safeParse(req.body);
+        if (!parsedData.success) {
+            res.status(400).json({
+                message: 'Validation Failed',
+                errors: parsedData.error.errors
+            });
+            return
+        }
+        const spaceElement = await client.spaceElements.findFirst({
+            where: {
+                id: parsedData.data.id,
+            }, include: {
+                space: true
+            }
+        });
+
+
+        if (!spaceElement?.space.creatorId || spaceElement.space.creatorId !== req.userId) {
+            res.status(403).json({ message: "Unauthorized" })
+            return
+        }
+
+        await client.spaceElements.delete({
+            where: {
+                id: parsedData.data.id,
+            }
+        });
+
+        res.status(200).json({ message: 'Element deleted' })
+    } catch (error) {
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
 spaceRouter.delete("/:spaceId", userMiddleware, async (req, res) => {
     try {
 
@@ -179,43 +215,6 @@ spaceRouter.post("/element", userMiddleware, async (req, res) => {
     }
 });
 
-spaceRouter.delete("/element", userMiddleware, async (req, res) => {
-    try {
-        const parsedData = DeleteElementSchema.safeParse(req.body);
-        if (!parsedData.success) {
-            res.status(400).json({
-                message: 'Validation Failed',
-                errors: parsedData.error.errors
-            });
-            return
-        }
-
-        const spaceElement = await client.spaceElements.findFirst({
-            where: {
-                id: parsedData.data.id,
-            }, include: {
-                space: true
-            }
-        });
-
-        if (!spaceElement?.space.creatorId || spaceElement.space.creatorId !== req.userId) {
-            res.status(403).json({ message: "Unauthorized" })
-            return
-        }
-
-        await client.spaceElements.delete({
-            where: {
-                id: parsedData.data.id,
-            }
-        });
-
-        res.status(200).json({ message: 'Element deleted' })
-
-    } catch (error) {
-        res.status(500).json({ message: 'Internal Server Error' });
-    }
-});
-
 spaceRouter.get("/:spaceId", userMiddleware, async (req, res) => {
     try {
         const space = await client.space.findUnique({
@@ -234,7 +233,6 @@ spaceRouter.get("/:spaceId", userMiddleware, async (req, res) => {
             res.status(400).json({ message: "Space not found" })
             return
         }
-        console.log('space.elements ==> ', space.elements)
         res.status(200).json({
             dimensions: `${space.width}x${space.height}`,
             elements: space.elements.map(e => ({
