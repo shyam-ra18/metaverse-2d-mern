@@ -5133,6 +5133,7 @@ ws@^1.0.0, "ws@file:D:\\Personal\\Project Learning\\metaverse-2d-mern\\metaverse
   version "1.0.0"
   resolved "file:apps/ws"
   dependencies:
+    "@types/ws" "^8.5.13"
     ws "^1.0.0"
 
 yallist@^3.0.2:
