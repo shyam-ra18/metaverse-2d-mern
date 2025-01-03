@@ -26,12 +26,15 @@ export class User {
   private spaceId?: string;
   private x: number;
   private y: number;
+  private ws: WebSocket;
 
-  constructor(private ws: WebSocket) {
+  constructor(ws: WebSocket) {
     // Assign a random ID to the user upon creation
     this.id = getRandomId(10);
     this.x = 0;
     this.y = 0;
+    this.ws = ws;
+    this.initHandlers();
   }
 
   // Initialize event handlers for the WebSocket connection
@@ -48,7 +51,7 @@ export class User {
 
           if (!userId) {
             this.ws.close();
-            return;
+            break;
           }
 
           this.userId = userId;
@@ -62,7 +65,7 @@ export class User {
 
           if (!space) {
             this.ws.close();
-            return;
+            break;
           }
 
           // Set the user's spaceId and assign random spawn coordinates within the space

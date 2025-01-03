@@ -1,5 +1,6 @@
 const axios2 = require("axios");
-
+const WebSocket = require("ws");
+// import WebSocket from 'ws';
 const BACKEND_URL = 'http://localhost:3000/api/v1';
 const WS_URL = "ws://localhost:3001";
 
@@ -797,6 +798,7 @@ describe("Websocket tests", () => {
     let adminY;
 
     function waitForAndPopLatestMessage(messageArray) {
+        console.log('message Arrya', messageArray)
         return new Promise(async (resolve) => {
             // If there are messages in the array, resolve immediately
             if (messageArray.length > 0) {
@@ -937,7 +939,10 @@ describe("Websocket tests", () => {
     })
 
     test("Get back acknowledgment for joining the space", async () => {
-        console.log("insixce first test")
+        // console.log("insixce first test")
+        console.log("adminToken ==> ", adminToken)
+        console.log("spaceId ==> ", spaceId)
+
         ws1.send(JSON.stringify({
             "type": "join",
             "payload": {
@@ -955,7 +960,7 @@ describe("Websocket tests", () => {
                 "token": userToken
             }
         }))
-        console.log("insixce first test3")
+        console.log("message1 data ==> ", message1.payload.user)
 
         const message2 = await waitForAndPopLatestMessage(ws2Messages);
         const message3 = await waitForAndPopLatestMessage(ws1Messages);
